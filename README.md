@@ -1,4 +1,4 @@
-#### 一、安装ETH智能合约部署工具
+#### 一、安装ETH智能合约部署工具，[Truffle使用文档](https://www.trufflesuite.com/docs/truffle/getting-started/creating-a-project)
 ```
 $ npm install -g truffle
 ```

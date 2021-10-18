@@ -1,0 +1,26 @@
+{
+  "name": "solidity-dapp",
+  "version": "1.0.0",
+  "description": "以太坊Dapp开发示例",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firechiang/solidity-dapp.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/firechiang/solidity-dapp/issues"
+  },
+  "homepage": "https://github.com/firechiang/solidity-dapp#readme",
+  "dependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
