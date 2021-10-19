@@ -2,7 +2,7 @@
 App = {
   web3Provider: null,
   contracts: {},
-
+  web3: null,
   init: async function() {
     // Load pets.
     $.getJSON('../pets.json', function(data) {
@@ -20,39 +20,8 @@ App = {
         petsRow.append(petTemplate.html());
       }
     });
-
-    return await App.initWeb3();
-  },
-
-  /**
-   * 初始化web3
-   * @see https://github.com/ChainSafe/web3.js
-   * @returns 
-   */
-  initWeb3: async function() {
-    // 注意：连接地址是ETH RPC服务地址
-    //var web3 = new Web3('ws://127.0.0.1:7545')
-    var web3 = new Web3('http://127.0.0.1:7545')
-    console.info(web3)
-
-    //App.web3Provider = web3.currentProvider
-    // websocket 连接
-    //App.web3Provider = new Web3.providers.WebsocketProvider('ws://127.0.0.1:7545')
-
-    // http 连接
-    App.web3Provider = new Web3.providers.HttpProvider('http://127.0.0.1:7545')
-    web3.setProvider(App.web3Provider)
-
-    //web3.setProvider('ws://127.0.0.1:7545')
-    //web3.setProvider('http://127.0.0.1:7545')
-    //web3.setProvider(App.web3Provider)
-
-    //console.log(App.web3Provider)
-    
-
-    
-    // 初始化智能合约
-    return App.initContract();
+    // 绑定点击事件
+    return App.bindEvents()
   },
 
   /**
@@ -70,15 +39,18 @@ App = {
         // 标记宠物是否被领养
         return App.markAdopted()
     });
-    // 绑定点击领养按钮事件
-    return App.bindEvents()
   },
 
   /**
-   * 绑定点击领养按钮事件
+   * 绑定点击事件
    */
   bindEvents: function() {
+    // 绑定点击领养按钮事件
     $(document).on('click', '.btn-adopt', App.handleAdopt);
+    // 绑定点击连接钱包事件
+    $(document).on('click', '#connect_wallet', App.handleConnectWallet);
+    // 绑定点击断开连接钱包事件
+    $(document).on('click', '#disconnect_wallet', App.handleDisconnectWallet);
   },
 
   /**
@@ -110,7 +82,7 @@ App = {
     event.preventDefault();
     var petId = parseInt($(event.target).data('id'));
     // 获取ETH账户余额
-    web3.eth.getAccounts().then((error,accounts) => {
+    App.web3.eth.getAccounts((error,accounts) => {
         console.info('账户信息')
         console.info(accounts)
         // 把第一个账户当成默认账户
@@ -128,6 +100,122 @@ App = {
           console.error(e)
         })
     });
+  },
+  /**
+   * 处理钱包连接逻辑
+   * @param {*} event 
+   */
+  handleConnectWallet: function(event) {
+    console.info(ethereum)
+    // 浏览器安装了 MetaMask 插件
+    if (window.ethereum) {
+      App.web3 = new Web3(window.ethereum);
+      // 引导用户授权
+      window.ethereum
+      .request({
+        method: 'wallet_requestPermissions',
+        params: [{ eth_accounts: {} }],
+      })
+      .then((permissions) => {
+        const accountsPermission = permissions.find(
+          (permission) => permission.parentCapability === 'eth_accounts'
+        );
+        if (accountsPermission) {
+          console.log('eth_accounts permission successfully requested（用户授权成功）!');
+          // 获取账户相关信息
+          App.getAccountInfo();
+        }
+      })
+      .catch((error) => {
+        if (error.code === 4001) {
+          // EIP-1193 userRejectedRequest error
+          console.log('Permissions needed to continue（用户未授权）.');
+        } else {
+          console.error(error);
+        }
+      });
+      try {
+        // 请求连接MetaMask（已废弃，建议使用下面eth_requestAccounts（获取账户的方式））
+        //window.ethereum.enable();
+        // 获取用户账户信息
+        //window.ethereum.request({ method: 'eth_requestAccounts' }).then((accounts)=>{
+            // 钱包账户信息
+            //console.info('钱包账户信息'+accounts)
+        //});
+      } catch (error) {
+        // 用户拒绝获取MetaMask账户信息
+        console.info(error)
+      }
+      // 判断MetaMask所连接的网络ID是不是 Ethereum 主网的
+      if (window.ethereum.networkVersion !== "1") {
+          //console.log('当前网络不在以太坊')
+      }
+      // 监听账号切换
+      window.ethereum.on("accountsChanged", function(accounts) {
+        $('#connect_wallet').text('已连接：'+accounts[0]).attr('disabled',true)
+      });
+      // 监听链切换
+      ethereum.on('chainChanged', (chainId) => {
+
+      });
+      // 监听连接
+      ethereum.on('connect',  (connectInfo) => {
+        // 确定提供程序何时/是否连接。
+        if(ethereum.isConnected()){
+            console.info('asasas')
+        }
+      });
+      // 监听断开连接
+      ethereum.on('disconnect', (error) => {
+
+      });
+      // 监听消息
+      ethereum.on('message', (message) => {
+
+      });
+
+    } else if (window.web3) {
+      // Use Mist/MetaMask's provider.
+      App.web3 = window.web3;
+      // 获取账户相关信息
+      App.getAccountInfo();
+    } else {
+      // 注意：连接地址是ETH RPC服务地址
+      // websocket 连接
+      //const provider = new Web3.providers.WebsocketProvider('ws://127.0.0.1:7545');
+      // http 连接
+      const provider = new Web3.providers.HttpProvider("http://127.0.0.1:7545");
+      App.web3 = new Web3(provider);
+      // 获取账户相关信息
+      App.getAccountInfo();
+    }
+  },
+
+  /**
+   * 处理断开连接钱包逻辑
+   * @param {*} event 
+   */
+  handleDisconnectWallet: function(event) {
+      console.info(App.web3.eth.accounts)
+      // 放开连接钱包按钮
+      $('#connect_wallet').text('连接钱包').attr('disabled',false);
+      // 隐藏断开连接钱包按钮
+      $("#disconnect_wallet").css({"display":"none"});
+  },
+
+  /**
+   * 获取账户相关
+   */
+  getAccountInfo: function() {
+    App.web3.eth.getAccounts(function(error,accounts) {
+      $('#connect_wallet').text('已连接：'+accounts[0]).attr('disabled',true)
+    });
+    // 配置 web3Provider
+    App.web3Provider = App.web3.currentProvider;
+    // 钱包连接成功初始化智能合约
+    App.initContract();
+    // 显示断开连接钱包按钮
+    $("#disconnect_wallet").css({"display":"block"});
   }
 };
 
