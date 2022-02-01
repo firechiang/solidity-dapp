@@ -697,7 +697,7 @@ library UniswapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash（配对合约编译后二进制Hash值，想部署到其它就必须修改该值，注意修改时不需要Hash值前面的0x）
+                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash（配对合约编译后二进制Hash值，注意修改时不需要Hash值前面的0x）
             ))));
     }
 
