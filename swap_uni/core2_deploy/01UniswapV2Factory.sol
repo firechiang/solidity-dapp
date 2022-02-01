@@ -403,6 +403,8 @@ contract UniswapV2Factory is IUniswapV2Factory {
     address[] public allPairs;
 
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+    // 配对合约编译后二进制Hash值，当前合约部署完成后，可在编辑器中执行一下该变量获取该值（该值用于计算配对合约地址使用）
+    bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type (UniswapV2Pair).creationCode));
 
     constructor(address _feeToSetter) public {
         feeToSetter = _feeToSetter;
