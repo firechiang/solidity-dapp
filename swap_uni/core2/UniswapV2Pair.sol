@@ -336,10 +336,10 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         //如果`输出数量1` > 0 安全发送`输出数量1`的token1到to地址
         if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
 		
-        //如果data的长度大于0 通过to合约地址调用合约里面的uniswapV2Call函数
+        //如果data的长度大于0 通过to合约地址调用合约里面的uniswapV2Call函数（注意：这个其实是闪电贷功能，如果这个函数里面没有还钱，那么整个事务将执行失败）
         if (data.length > 0) IUniswapV2Callee(to).uniswapV2Call(msg.sender, amount0Out, amount1Out, data);
         
-		//`余额0,1` = 当前合约在`token0,1`合约内的余额
+        //`余额0,1` = 当前合约在`token0,1`合约内的余额
         balance0 = IERC20(_token0).balanceOf(address(this));
         balance1 = IERC20(_token1).balanceOf(address(this));
         }
